@@ -93,3 +93,4 @@ sortvisual/
   想要快地看完就调大「每帧操作数」。
 
 ## 许可证
+GNU Affero General Public License v3.0
