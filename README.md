@@ -38,30 +38,18 @@ python main.py
 
 需要 Python 3.7+ 和 PyQt5（开发环境为 Python 3.10 + PyQt5 5.15）。
 
-## 直接下载 exe
+## 图标
 
-`dist/SortVisualizer.exe` 是已经打好的单文件版本（Windows x64，约 34 MB）：
-双击即用，不用装 Python，也不会弹控制台黑框（GUI 子系统）。
+- `assets/icon.svg` 是图标源文件（深色圆角方块 + 五根渐高的彩虹柱，配色就是彩虹条的取色），改它就够了。
+- `assets/icon.ico` 是给 Windows 用的图标文件，由脚本生成。
+- 窗口图标不是读外部文件，而是把 SVG 内嵌在 `sortvisual/icon.py` 里、运行时用 QtSvg 现画成
+  16…256 多个尺寸，所以程序跑起来一个图标文件都不用带。
 
-## 自己重新打包 / 换图标
+改完 SVG 重新生成一次（需要 PyQt5 和 Pillow）：
 
 ```bash
-# 1) 改了 assets/icon.svg 就重新生成 assets/icon.ico 和 sortvisual/icon.py
-#    （需要 PyQt5 和 Pillow）
 python tools/make_icon.py
-
-# 2) 打包成单文件、无控制台的 exe
-pyinstaller SortVisualizer.spec
-# 等价于：
-# pyinstaller --noconfirm --clean --onefile --windowed \
-#     --name SortVisualizer --icon assets/icon.ico main.py
 ```
-
-产物在 `dist/SortVisualizer.exe`。
-
-关于图标：窗口图标不是读外部文件，而是把 SVG 内嵌在 `sortvisual/icon.py` 里、
-运行时用 QtSvg 现画成 16…256 多个尺寸，所以打包时一个资源文件都不用带；
-`assets/icon.svg` 是可编辑的源图，`assets/icon.ico` 只给 PyInstaller 的 `--icon` 用。
 
 ## 目录结构
 
@@ -69,7 +57,6 @@ pyinstaller SortVisualizer.spec
 main.py                 程序入口，套上样式表、图标后开窗
 requirements.txt        依赖（PyQt5）
 sort-config.json        一份示例配置（保存 / 导入 用的是同一套格式）
-SortVisualizer.spec     PyInstaller 配方（packaging 用）
 assets/
     icon.svg            图标源文件（改这个）
     icon.ico            Windows 图标，由 make_icon.py 生成
