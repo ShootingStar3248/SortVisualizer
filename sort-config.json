@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "settings": {
+    "size": 500,
+    "seed": 682739,
+    "ops_per_frame": 512,
+    "delay_ms": 0
+  },
+  "algorithms": [
+    {
+      "name": "BubbleSort",
+      "code": "def sort(a):\n    n = len(a)\n    for i in range(n - 1):\n        swapped = False\n        for j in range(n - 1 - i):\n            if a[j] > a[j + 1]:\n                a[j], a[j + 1] = a[j + 1], a[j]\n                swapped = True\n        if not swapped:\n            break\n"
+    },
+    {
+      "name": "InsertionSort",
+      "code": "def sort(a):\n    for i in range(1, len(a)):\n        cur = a[i]\n        j = i - 1\n        while j >= 0 and a[j] > cur:\n            a[j + 1] = a[j]\n            j -= 1\n        a[j + 1] = cur\n"
+    },
+    {
+      "name": "SelectionSort",
+      "code": "def sort(a):\n    n = len(a)\n    for i in range(n - 1):\n        k = i\n        for j in range(i + 1, n):\n            if a[j] < a[k]:\n                k = j\n        if k != i:\n            a[i], a[k] = a[k], a[i]\n"
+    },
+    {
+      "name": "QuickSort",
+      "code": "def sort(a):\n    def partition(lo, hi):\n        pivot = a[hi]\n        i = lo\n        for j in range(lo, hi):\n            if a[j] < pivot:\n                if i != j:\n                    a[i], a[j] = a[j], a[i]\n                i += 1\n        a[i], a[hi] = a[hi], a[i]\n        return i\n\n    def qsort(lo, hi):\n        if lo >= hi:\n            return\n        p = partition(lo, hi)\n        qsort(lo, p - 1)\n        qsort(p + 1, hi)\n\n    qsort(0, len(a) - 1)\n"
+    },
+    {
+      "name": "MergeSort",
+      "code": "def sort(a):\n    def merge(lo, mid, hi):\n        left = a[lo:mid]\n        right = a[mid:hi]\n        i = j = 0\n        k = lo\n        while i < len(left) and j < len(right):\n            if left[i] <= right[j]:\n                a[k] = left[i]\n                i += 1\n            else:\n                a[k] = right[j]\n                j += 1\n            k += 1\n        while i < len(left):\n            a[k] = left[i]\n            i += 1\n            k += 1\n        while j < len(right):\n            a[k] = right[j]\n            j += 1\n            k += 1\n\n    def msort(lo, hi):\n        if hi - lo <= 1:\n            return\n        mid = (lo + hi) // 2\n        msort(lo, mid)\n        msort(mid, hi)\n        merge(lo, mid, hi)\n\n    msort(0, len(a))\n"
+    },
+    {
+      "name": "ShellSort",
+      "code": "def sort(a):\n    n = len(a)\n    gap = n // 2\n    while gap > 0:\n        for i in range(gap, n):\n            cur = a[i]\n            j = i - gap\n            while j >= 0 and a[j] > cur:\n                a[j + gap] = a[j]\n                j -= gap\n            a[j + gap] = cur\n        gap //= 2\n"
+    },
+    {
+      "name": "Timsort",
+      "code": "def sort(a):\n    \"\"\"原地 TimSort。\"\"\"\n    n = len(a)\n    if n < 2:\n        return\n\n    MIN_RUN = 32\n\n    # ---------- 插入排序：对 a[lo:hi] 升序排序 ----------\n    def insertion_sort(lo, hi):\n        for i in range(lo + 1, hi):\n            key = a[i]\n            j = i - 1\n            while j >= lo and a[j] > key:\n                a[j + 1] = a[j]\n                j -= 1\n            a[j + 1] = key\n\n    # ---------- 归并：把 a[lo:mid] 和 a[mid:hi] 合并 ----------\n    def merge(lo, mid, hi):\n        left = a[lo:mid]\n        right = a[mid:hi]\n        i = j = 0\n        k = lo\n        while i < len(left) and j < len(right):\n            # <= 保证稳定性\n            if left[i] <= right[j]:\n                a[k] = left[i]\n                i += 1\n            else:\n                a[k] = right[j]\n                j += 1\n            k += 1\n        while i < len(left):\n            a[k] = left[i]\n            i += 1\n            k += 1\n        while j < len(right):\n            a[k] = right[j]\n            j += 1\n            k += 1\n\n    # ---------- 计算最小 run 长度 ----------\n    # 取 32~64 之间，使 n/min_run 接近 2 的幂，便于归并\n    def min_run_length(n):\n        r = 0\n        while n >= MIN_RUN:\n            r |= n & 1\n            n >>= 1\n        return n + r\n\n    min_run = min_run_length(n)\n\n    # ---------- 第一步：扫描自然 run，补足并排序 ----------\n    i = 0\n    while i < n:\n        # 找一段自然有序（升序或严格降序）\n        run_hi = i + 1\n        if run_hi < n:\n            if a[run_hi] < a[i]:\n                # 严格降序：一路找下去，然后反转\n                while run_hi < n and a[run_hi] < a[run_hi - 1]:\n                    run_hi += 1\n                a[i:run_hi] = reversed(a[i:run_hi])\n            else:\n                # 非降序\n                while run_hi < n and a[run_hi] >= a[run_hi - 1]:\n                    run_hi += 1\n\n        # 如果 run 太短，用插入排序扩展到 min_run\n        if run_hi - i < min_run:\n            run_hi = min(i + min_run, n)\n            insertion_sort(i, run_hi)\n\n        i = run_hi\n\n    # ---------- 第二步：自底向上归并所有 run ----------\n    size = min_run\n    while size < n:\n        for lo in range(0, n, 2 * size):\n            mid = min(lo + size, n)\n            hi = min(lo + 2 * size, n)\n            if mid < hi:\n                merge(lo, mid, hi)\n        size *= 2"
+    },
+    {
+      "name": "HeapSort",
+      "code": "def sort(a):\n    n = len(a)\n\n    def sift_down(i, size):\n        while True:\n            largest = i\n            left = 2 * i + 1\n            right = 2 * i + 2\n            if left < size and a[left] > a[largest]:\n                largest = left\n            if right < size and a[right] > a[largest]:\n                largest = right\n            if largest == i:\n                break\n            a[i], a[largest] = a[largest], a[i]\n            i = largest\n\n    # 建大顶堆\n    for i in range(n // 2 - 1, -1, -1):\n        sift_down(i, n)\n\n    # 依次取出堆顶放到末尾\n    for end in range(n - 1, 0, -1):\n        a[0], a[end] = a[end], a[0]\n        sift_down(0, end)"
+    },
+    {
+      "name": "BidirectionalBubbleSort",
+      "code": "def sort(a):\n    left = 0\n    right = len(a) - 1\n    swapped = True\n\n    while swapped:\n        swapped = False\n\n        # 从左到右，把最大值推到右端\n        for i in range(left, right):\n            if a[i] > a[i + 1]:\n                a[i], a[i + 1] = a[i + 1], a[i]\n                swapped = True\n        right -= 1\n\n        if not swapped:\n            break\n\n        swapped = False\n\n        # 从右到左，把最小值推到左端\n        for i in range(right, left, -1):\n            if a[i - 1] > a[i]:\n                a[i - 1], a[i] = a[i], a[i - 1]\n                swapped = True\n        left += 1"
+    },
+    {
+      "name": "Introsort",
+      "code": "import math\n\n\ndef sort(a):\n    n = len(a)\n    if n <= 1:\n        return\n\n    max_depth = 2 * int(math.log2(n))\n\n    def insertion_sort(lo, hi):\n        for i in range(lo + 1, hi + 1):\n            key = a[i]\n            j = i - 1\n            while j >= lo and a[j] > key:\n                a[j + 1] = a[j]\n                j -= 1\n            a[j + 1] = key\n\n    def sift_down(i, lo, hi):\n        while True:\n            largest = i\n            left = 2 * i + 1\n            right = 2 * i + 2\n            if left <= hi and a[left] > a[largest]:\n                largest = left\n            if right <= hi and a[right] > a[largest]:\n                largest = right\n            if largest == i:\n                break\n            a[i], a[largest] = a[largest], a[i]\n            i = largest\n\n    def heap_sort(lo, hi):\n        size = hi - lo + 1\n        for i in range(lo + size // 2 - 1, lo - 1, -1):\n            sift_down(i, lo, hi)\n        for end in range(hi, lo, -1):\n            a[lo], a[end] = a[end], a[lo]\n            sift_down(lo, lo, end - 1)\n\n    def partition(lo, hi):\n        mid = (lo + hi) // 2\n        # 三数取中\n        if a[mid] < a[lo]:\n            a[mid], a[lo] = a[lo], a[mid]\n        if a[hi] < a[lo]:\n            a[hi], a[lo] = a[lo], a[hi]\n        if a[hi] < a[mid]:\n            a[hi], a[mid] = a[mid], a[hi]\n        pivot = a[mid]\n        a[mid], a[hi - 1] = a[hi - 1], a[mid]\n        i = lo\n        j = hi - 1\n        while True:\n            i += 1\n            while a[i] < pivot:\n                i += 1\n            j -= 1\n            while a[j] > pivot:\n                j -= 1\n            if i >= j:\n                break\n            a[i], a[j] = a[j], a[i]\n        a[i], a[hi - 1] = a[hi - 1], a[i]\n        return i\n\n    def intro_sort(lo, hi, depth):\n        while hi - lo > 16:\n            if depth == 0:\n                heap_sort(lo, hi)\n                return\n            depth -= 1\n            p = partition(lo, hi)\n            intro_sort(p + 1, hi, depth)\n            hi = p - 1\n        insertion_sort(lo, hi)\n\n    intro_sort(0, n - 1, max_depth)"
+    },
+    {
+      "name": "CountingSort",
+      "code": "def sort(a):\n    if not a:\n        return\n\n    min_val = min(a)\n    max_val = max(a)\n    size = max_val - min_val + 1\n\n    count = [0] * size\n    for x in a:\n        count[x - min_val] += 1\n\n    idx = 0\n    for i in range(size):\n        while count[i] > 0:\n            a[idx] = i + min_val\n            idx += 1\n            count[i] -= 1"
+    },
+    {
+      "name": "RadixSort",
+      "code": "def sort(a):\n    if not a:\n        return\n\n    max_val = max(a)\n    exp = 1\n\n    while max_val // exp > 0:\n        # 按当前位做计数排序（10 个桶）\n        count = [0] * 10\n        for x in a:\n            count[(x // exp) % 10] += 1\n        for i in range(1, 10):\n            count[i] += count[i - 1]\n\n        output = [0] * len(a)\n        for i in range(len(a) - 1, -1, -1):\n            digit = (a[i] // exp) % 10\n            count[digit] -= 1\n            output[count[digit]] = a[i]\n\n        for i in range(len(a)):\n            a[i] = output[i]\n\n        exp *= 10"
+    },
+    {
+      "name": "BucketSort",
+      "code": "def sort(a):\n    if not a:\n        return\n\n    n = len(a)\n    min_val = min(a)\n    max_val = max(a)\n\n    if min_val == max_val:\n        return\n\n    bucket_count = n\n    buckets = [[] for _ in range(bucket_count)]\n    span = max_val - min_val + 1\n\n    for x in a:\n        idx = (x - min_val) * bucket_count // span\n        if idx == bucket_count:\n            idx -= 1\n        buckets[idx].append(x)\n\n    idx = 0\n    for bucket in buckets:\n        # 桶内插入排序\n        for i in range(1, len(bucket)):\n            key = bucket[i]\n            j = i - 1\n            while j >= 0 and bucket[j] > key:\n                bucket[j + 1] = bucket[j]\n                j -= 1\n            bucket[j + 1] = key\n\n        for x in bucket:\n            a[idx] = x\n            idx += 1"
+    },
+    {
+      "name": "StalinSort",
+      "code": "def sort(a):\n    \"\"\"斯大林排序：把不是有序的元素全部删除（移除）\"\"\"\n    if len(a) <= 1:\n        return\n    i = 0\n    while i < len(a) - 1:\n        if a[i] > a[i + 1]:\n            # 删除 a[i+1]，因为它是\"叛徒\"\n            del a[i + 1]\n            # 不前进 i，因为需要重新比较 a[i] 和新的 a[i+1]\n        else:\n            i += 1"
+    },
+    {
+      "name": "MiracleSort",
+      "code": "def sort(a):\n    import random\n    n = len(a)\n    while True:\n        ordered = True\n        for i in range(n - 1):\n            if a[i] > a[i + 1]:\n                ordered = False\n                break\n        if ordered:\n            return"
+    },
+    {
+      "name": "Bogosort",
+      "code": "def sort(a):\n    \"\"\"猴子排序 (Bogosort) —— 完整打乱版，手写 shuffle 以便可视化钩子捕获\"\"\"\n    import random\n    n = len(a)\n    if n < 2:\n        return\n\n    def is_sorted():\n        for i in range(n - 1):\n            if a[i] > a[i + 1]:\n                return False\n        return True\n\n    def shuffle():\n        # 手写 Fisher-Yates，保证均匀打乱，且每次交换都经过 __setitem__\n        for i in range(n - 1, 0, -1):\n            j = random.randrange(i + 1)   # [0, i]，开区间上界 i+1\n            a[i], a[j] = a[j], a[i]\n\n    while not is_sorted():\n        shuffle()"
+    }
+  ]
+}
